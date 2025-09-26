@@ -130,6 +130,65 @@
         }
 
         /// <summary>
+        /// Retrieves the values of the columns with the specified <paramref name="tablePid"/> and <paramref name="columnsIdx"/>.
+        /// </summary>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="tablePid">The ID of the table parameter.</param>
+        /// <param name="keyIdx">The 0-based position of the key column, corresponding to the idx as defined in protocol.xml file. The values of this column will be the key of the resulting dictionary.</param>
+        /// <param name="columnsIdx">The 0-based positions of the columns, corresponding to the idx as defined in protocol.xml file.</param>
+        /// <returns>
+        /// A dictionary mapping the primary key to an array of column values, for each row in the table.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="columnsIdx"/> is <see langword="null"/>.</exception>
+        public static IDictionary<string, object[]> GetColumns(this SLProtocol protocol, int tablePid, uint keyIdx, IEnumerable<uint> columnsIdx)
+        {
+            if (protocol is null)
+            {
+                throw new ArgumentNullException(nameof(protocol));
+            }
+
+            if (columnsIdx == null)
+            {
+                throw new ArgumentNullException(nameof(columnsIdx));
+            }
+
+            // Ensure we retrieve the key column
+            var columnsToRetrieve = columnsIdx.ToList();
+            var originalColumnsCount = columnsToRetrieve.Count;
+
+            if (!columnsToRetrieve.Contains(keyIdx))
+            {
+                columnsToRetrieve.Add(keyIdx);
+            }
+
+            // Retrieve the columns.
+            var columns = protocol.GetColumns(tablePid, columnsToRetrieve);
+
+            // Find the key column index
+            int keyColumnIndex = columnsToRetrieve.IndexOf(keyIdx);
+            var keyColumn = (object[])columns[keyColumnIndex];
+
+            // Build the result.
+            var result = new Dictionary<string, object[]>();
+
+            for (var rowIndex = 0; rowIndex < keyColumn.Length; rowIndex++)
+            {
+                var key = Convert.ToString(keyColumn[rowIndex]);
+                var rowValues = new object[originalColumnsCount];
+
+                for (var colIndex = 0; colIndex < originalColumnsCount; colIndex++)
+                {
+                    var columnData = (object[])columns[colIndex];
+                    rowValues[colIndex] = rowIndex < columnData.Length ? columnData[rowIndex] : null;
+                }
+
+                result[key] = rowValues;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Runs the specified action.
         /// </summary>
         /// <param name="protocol">Link with SLProtocol process.</param>
