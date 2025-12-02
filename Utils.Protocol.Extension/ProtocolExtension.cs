@@ -405,10 +405,11 @@
         }
 
         /// <summary>
-        /// Sets the specified parameters to the specified values.
+        /// Sets the specified standalone parameters to the specified values.
+        /// Note that due to the fact this method relies on a <c>Dictionary</c>, the order in which the sets are executed is not guaranteed.
         /// </summary>
         /// <param name="protocol">Link with SLProtocol process.</param>
-        /// <param name="paramsToSet">The IDs of the parameters to set with their value to set.</param>
+        /// <param name="paramsToSet">The IDs of the standalone parameters to set with their value to set.</param>
         /// <param name="dateTime">The time stamp for the new values (in case of historySets).</param>
         /// <exception cref="ArgumentNullException"><paramref name="paramsToSet"/> is <see langword="null"/>.</exception>
         public static void SetParameters(this SLProtocol protocol, IDictionary<int, object> paramsToSet, DateTime? dateTime = null)
