@@ -142,6 +142,7 @@
         /// <exception cref="ArgumentNullException"><paramref name="columnsIdx"/> is <see langword="null"/>.</exception>
         public static IDictionary<string, object[]> GetColumns(this SLProtocol protocol, int tablePid, uint keyIdx, IEnumerable<uint> columnsIdx)
         {
+            // Sanity checks
             if (protocol is null)
             {
                 throw new ArgumentNullException(nameof(protocol));
