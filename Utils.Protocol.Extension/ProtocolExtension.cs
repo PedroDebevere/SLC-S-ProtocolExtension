@@ -106,6 +106,24 @@
         }
 
         /// <summary>
+        /// Gets a column with the desired format.
+        /// </summary>
+        /// <typeparam name="T">Type of the Column.</typeparam>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="tableId">Id of the table to fetch the column from.</param>
+        /// <param name="columnIdx">Index of the desired column.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> with the desired column.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
+        public static IEnumerable<T> GetColumn<T>(this SLProtocol protocol, int tableId, uint columnIdx)
+            where T : IConvertible
+        {
+            object result = protocol.NotifyProtocol(321, tableId, new[] { columnIdx });
+
+            ValidateResult(tableId, new uint[] { columnIdx }, 1, result, out object[] columns, out int rowCount);
+            return GetColumnIterator<T>((object[])columns[0], rowCount);
+        }
+
+        /// <summary>
         /// Retrieves the values of the columns with the specified <paramref name="tablePid"/> and <paramref name="columnsIdx"/>.
         /// </summary>
         /// <param name="protocol">Link with SLProtocol process.</param>
@@ -190,84 +208,53 @@
         }
 
         /// <summary>
-		/// Gets a column with the desired format.
-		/// </summary>
-		/// <typeparam name="T">Type of the Column.</typeparam>
-        /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the column from.</param>
-		/// <param name="columnIdx">Index of the desired column.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> with the desired column.</returns>
-        public static IEnumerable<T> GetColumn<T>(this SLProtocol protocol, int tableId, uint columnIdx)
-            where T : IConvertible
-        {
-            var column = (object[])((object[])protocol.NotifyProtocol(321, tableId, new[] { columnIdx }))[0];
-
-            for (var i = 0; i < column.Length; i++)
-            {
-                yield return column[i].ChangeType<T>();
-            }
-        }
-
-        /// <summary>
-		/// Gets two columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets two columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, TReturn> returnSelector)
             where T1 : IConvertible
             where T2 : IConvertible
         {
             const int columnCount = 2;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
-		/// Gets three columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets three columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, T3, TReturn> returnSelector)
             where T1 : IConvertible
             where T2 : IConvertible
@@ -275,30 +262,13 @@
         {
             const int columnCount = 3;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -314,9 +284,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, T3, T4, TReturn> returnSelector)
             where T1 : IConvertible
             where T2 : IConvertible
@@ -325,31 +297,13 @@
         {
             const int columnCount = 4;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -366,9 +320,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, T3, T4, T5, TReturn> returnSelector)
             where T1 : IConvertible
             where T2 : IConvertible
@@ -378,32 +334,13 @@
         {
             const int columnCount = 5;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -421,9 +358,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, TReturn> returnSelector)
             where T1 : IConvertible
@@ -435,33 +374,13 @@
         {
             const int columnCount = 6;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -480,9 +399,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, TReturn> returnSelector)
             where T1 : IConvertible
@@ -495,34 +416,13 @@
         {
             const int columnCount = 7;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -542,9 +442,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> returnSelector)
             where T1 : IConvertible
@@ -558,35 +460,13 @@
         {
             const int columnCount = 8;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -607,9 +487,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn> returnSelector)
             where T1 : IConvertible
@@ -624,60 +506,40 @@
         {
             const int columnCount = 9;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
+
         /// <summary>
-		/// Gets ten columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
-		/// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Gets ten columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TReturn> returnSelector)
             where T1 : IConvertible
@@ -693,37 +555,13 @@
         {
             const int columnCount = 10;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -746,9 +584,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn> returnSelector)
             where T1 : IConvertible
@@ -765,38 +605,13 @@
         {
             const int columnCount = 11;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -820,9 +635,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn> returnSelector)
             where T1 : IConvertible
@@ -840,39 +657,13 @@
         {
             const int columnCount = 12;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>(),
-                    ((object[])columns[11])[i].ChangeType<T12>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -897,9 +688,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn> returnSelector)
             where T1 : IConvertible
@@ -918,40 +711,13 @@
         {
             const int columnCount = 13;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>(),
-                    ((object[])columns[11])[i].ChangeType<T12>(),
-                    ((object[])columns[12])[i].ChangeType<T13>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -977,9 +743,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn> returnSelector)
             where T1 : IConvertible
@@ -999,41 +767,13 @@
         {
             const int columnCount = 14;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>(),
-                    ((object[])columns[11])[i].ChangeType<T12>(),
-                    ((object[])columns[12])[i].ChangeType<T13>(),
-                    ((object[])columns[13])[i].ChangeType<T14>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -1060,9 +800,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn> returnSelector)
             where T1 : IConvertible
@@ -1083,42 +825,13 @@
         {
             const int columnCount = 15;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>(),
-                    ((object[])columns[11])[i].ChangeType<T12>(),
-                    ((object[])columns[12])[i].ChangeType<T13>(),
-                    ((object[])columns[13])[i].ChangeType<T14>(),
-                    ((object[])columns[14])[i].ChangeType<T15>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -1146,9 +859,11 @@
 		/// <param name="columnIndices">Array with the Columns Indexes.</param>
 		/// <param name="returnSelector">A function to map each column element to a return element.</param>
 		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
-		/// <exception cref="ArgumentOutOfRangeException">
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">
 		/// Number of columns doesn't match the number of returned members.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn> returnSelector)
             where T1 : IConvertible
@@ -1170,43 +885,13 @@
         {
             const int columnCount = 16;
 
-            if (columnIndices == null)
-            {
-                throw new ArgumentNullException(nameof(columnIndices));
-            }
+            ValidateGetColumnsArguments(columnIndices, columnCount, returnSelector);
 
-            if (returnSelector == null)
-            {
-                throw new ArgumentNullException(nameof(returnSelector));
-            }
+            object result = protocol.NotifyProtocol(321, tableId, columnIndices);
 
-            if (columnIndices.Length != columnCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
-            }
+            ValidateResult(tableId, columnIndices, columnCount, result, out object[] columns, out int rowCount);
 
-            var columns = (object[])protocol.NotifyProtocol(321, tableId, columnIndices);
-
-            for (var i = 0; i < ((object[])columns[0]).Length; i++)
-            {
-                yield return returnSelector(
-                    ((object[])columns[0])[i].ChangeType<T1>(),
-                    ((object[])columns[1])[i].ChangeType<T2>(),
-                    ((object[])columns[2])[i].ChangeType<T3>(),
-                    ((object[])columns[3])[i].ChangeType<T4>(),
-                    ((object[])columns[4])[i].ChangeType<T5>(),
-                    ((object[])columns[5])[i].ChangeType<T6>(),
-                    ((object[])columns[6])[i].ChangeType<T7>(),
-                    ((object[])columns[7])[i].ChangeType<T8>(),
-                    ((object[])columns[8])[i].ChangeType<T9>(),
-                    ((object[])columns[9])[i].ChangeType<T10>(),
-                    ((object[])columns[10])[i].ChangeType<T11>(),
-                    ((object[])columns[11])[i].ChangeType<T12>(),
-                    ((object[])columns[12])[i].ChangeType<T13>(),
-                    ((object[])columns[13])[i].ChangeType<T14>(),
-                    ((object[])columns[14])[i].ChangeType<T15>(),
-                    ((object[])columns[15])[i].ChangeType<T16>());
-            }
+            return GetColumnsIterator(columns, rowCount, returnSelector);
         }
 
         /// <summary>
@@ -1216,10 +901,15 @@
         /// <param name="protocol">Link with SLProtocol process.</param>
 		/// <param name="paramId">Id of the parameter to retrieve.</param>
 		/// <returns>The parameter value.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the returned value is null.</exception>
         public static T GetParameter<T>(this SLProtocol protocol, int paramId)
             where T : IConvertible
         {
-            return protocol.GetParameter(paramId).ChangeType<T>();
+            object value = protocol.GetParameter(paramId);
+
+            return value == null
+                ? throw new InvalidOperationException($"null was returned for parameter {paramId}. Does parameter with ID {paramId} exist?")
+                : value.ChangeType<T>();
         }
 
         /// <summary>
@@ -1235,123 +925,109 @@
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
 		/// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2)
             where T1 : IConvertible
             where T2 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 2);
 
-            if (paramIds.Length != 2)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2, out T3 param3)
             where T1 : IConvertible
             where T2 : IConvertible
             where T3 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 3);
 
-            if (paramIds.Length != 3)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
             param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-        }
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2, out T3 param3, out T4 param4)
             where T1 : IConvertible
             where T2 : IConvertible
             where T3 : IConvertible
             where T4 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 4);
 
-            if (paramIds.Length != 4)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
             param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-        }
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2, out T3 param3, out T4 param4, out T5 param5)
             where T1 : IConvertible
             where T2 : IConvertible
@@ -1359,46 +1035,41 @@
             where T4 : IConvertible
             where T5 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 5);
 
-            if (paramIds.Length != 5)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-            param5 = parameters[4].ChangeType<T5>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+			param5 = parameters[4].ChangeType<T5>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
-		/// <typeparam name="T6">Type of the sixth parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// <typeparam name="T6">Type of the sixth parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <param name="param6">Out variable with the sixth parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <param name="param6">Out variable with the sixth parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5, T6>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2, out T3 param3, out T4 param4, out T5 param5, out T6 param6)
             where T1 : IConvertible
             where T2 : IConvertible
@@ -1407,49 +1078,44 @@
             where T5 : IConvertible
             where T6 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 6);
 
-            if (paramIds.Length != 6)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-            param5 = parameters[4].ChangeType<T5>();
-            param6 = parameters[5].ChangeType<T6>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+			param5 = parameters[4].ChangeType<T5>();
+			param6 = parameters[5].ChangeType<T6>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
-		/// <typeparam name="T6">Type of the sixth parameter.</typeparam>
-		/// <typeparam name="T7">Type of the seventh parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// <typeparam name="T6">Type of the sixth parameter.</typeparam>
+        /// <typeparam name="T7">Type of the seventh parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <param name="param6">Out variable with the sixth parameter value.</param>
-		/// <param name="param7">Out variable with the seventh parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <param name="param6">Out variable with the sixth parameter value.</param>
+        /// <param name="param7">Out variable with the seventh parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5, T6, T7>(
             this SLProtocol protocol,
             uint[] paramIds,
@@ -1468,52 +1134,47 @@
             where T6 : IConvertible
             where T7 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 7);
 
-            if (paramIds.Length != 7)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-            param5 = parameters[4].ChangeType<T5>();
-            param6 = parameters[5].ChangeType<T6>();
-            param7 = parameters[6].ChangeType<T7>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+			param5 = parameters[4].ChangeType<T5>();
+			param6 = parameters[5].ChangeType<T6>();
+			param7 = parameters[6].ChangeType<T7>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
-		/// <typeparam name="T6">Type of the sixth parameter.</typeparam>
-		/// <typeparam name="T7">Type of the seventh parameter.</typeparam>
-		/// <typeparam name="T8">Type of the eighth parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// <typeparam name="T6">Type of the sixth parameter.</typeparam>
+        /// <typeparam name="T7">Type of the seventh parameter.</typeparam>
+        /// <typeparam name="T8">Type of the eighth parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <param name="param6">Out variable with the sixth parameter value.</param>
-		/// <param name="param7">Out variable with the seventh parameter value.</param>
-		/// <param name="param8">Out variable with the eighth parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <param name="param6">Out variable with the sixth parameter value.</param>
+        /// <param name="param7">Out variable with the seventh parameter value.</param>
+        /// <param name="param8">Out variable with the eighth parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5, T6, T7, T8>(
             this SLProtocol protocol,
             uint[] paramIds,
@@ -1534,55 +1195,50 @@
             where T7 : IConvertible
             where T8 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 8);
 
-            if (paramIds.Length != 8)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-            param5 = parameters[4].ChangeType<T5>();
-            param6 = parameters[5].ChangeType<T6>();
-            param7 = parameters[6].ChangeType<T7>();
-            param8 = parameters[7].ChangeType<T8>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+			param5 = parameters[4].ChangeType<T5>();
+			param6 = parameters[5].ChangeType<T6>();
+			param7 = parameters[6].ChangeType<T7>();
+			param8 = parameters[7].ChangeType<T8>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
-		/// <typeparam name="T6">Type of the sixth parameter.</typeparam>
-		/// <typeparam name="T7">Type of the seventh parameter.</typeparam>
-		/// <typeparam name="T8">Type of the eighth parameter.</typeparam>
-		/// <typeparam name="T9">Type of the ninth parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// <typeparam name="T6">Type of the sixth parameter.</typeparam>
+        /// <typeparam name="T7">Type of the seventh parameter.</typeparam>
+        /// <typeparam name="T8">Type of the eighth parameter.</typeparam>
+        /// <typeparam name="T9">Type of the ninth parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <param name="param6">Out variable with the sixth parameter value.</param>
-		/// <param name="param7">Out variable with the seventh parameter value.</param>
-		/// <param name="param8">Out variable with the eighth parameter value.</param>
-		/// <param name="param9">Out variable with the ninth parameter value.</param>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <param name="param6">Out variable with the sixth parameter value.</param>
+        /// <param name="param7">Out variable with the seventh parameter value.</param>
+        /// <param name="param8">Out variable with the eighth parameter value.</param>
+        /// <param name="param9">Out variable with the ninth parameter value.</param>
         /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5, T6, T7, T8, T9>(
             this SLProtocol protocol,
             uint[] paramIds,
@@ -1605,56 +1261,52 @@
             where T8 : IConvertible
             where T9 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 9);
 
-            if (paramIds.Length != 9)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
-            param1 = parameters[0].ChangeType<T1>();
-            param2 = parameters[1].ChangeType<T2>();
-            param3 = parameters[2].ChangeType<T3>();
-            param4 = parameters[3].ChangeType<T4>();
-            param5 = parameters[4].ChangeType<T5>();
-            param6 = parameters[5].ChangeType<T6>();
-            param7 = parameters[6].ChangeType<T7>();
-            param8 = parameters[7].ChangeType<T8>();
-            param9 = parameters[8].ChangeType<T9>();
-        }
+			param1 = parameters[0].ChangeType<T1>();
+			param2 = parameters[1].ChangeType<T2>();
+			param3 = parameters[2].ChangeType<T3>();
+			param4 = parameters[3].ChangeType<T4>();
+			param5 = parameters[4].ChangeType<T5>();
+			param6 = parameters[5].ChangeType<T6>();
+			param7 = parameters[6].ChangeType<T7>();
+			param8 = parameters[7].ChangeType<T8>();
+			param9 = parameters[8].ChangeType<T9>();
+		}
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
-		/// <typeparam name="T3">Type of the third parameter.</typeparam>
-		/// <typeparam name="T4">Type of the fourth parameter.</typeparam>
-		/// <typeparam name="T5">Type of the fifth parameter.</typeparam>
-		/// <typeparam name="T6">Type of the sixth parameter.</typeparam>
-		/// <typeparam name="T7">Type of the seventh parameter.</typeparam>
-		/// <typeparam name="T8">Type of the eighth parameter.</typeparam>
-		/// <typeparam name="T9">Type of the ninth parameter.</typeparam>
-		/// <typeparam name="T10">Type of the tenth parameter.</typeparam>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <param name="param3">Out variable with the third parameter value.</param>
-		/// <param name="param4">Out variable with the fourth parameter value.</param>
-		/// <param name="param5">Out variable with the fifth parameter value.</param>
-		/// <param name="param6">Out variable with the sixth parameter value.</param>
-		/// <param name="param7">Out variable with the seventh parameter value.</param>
-		/// <param name="param8">Out variable with the eighth parameter value.</param>
-		/// <param name="param9">Out variable with the ninth parameter value.</param>
-		/// <param name="param10">Out variable with the tenth parameter value.</param>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// If the length of the paramIds is different from the number of out parameters.
-		/// </exception>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// <typeparam name="T3">Type of the third parameter.</typeparam>
+        /// <typeparam name="T4">Type of the fourth parameter.</typeparam>
+        /// <typeparam name="T5">Type of the fifth parameter.</typeparam>
+        /// <typeparam name="T6">Type of the sixth parameter.</typeparam>
+        /// <typeparam name="T7">Type of the seventh parameter.</typeparam>
+        /// <typeparam name="T8">Type of the eighth parameter.</typeparam>
+        /// <typeparam name="T9">Type of the ninth parameter.</typeparam>
+        /// <typeparam name="T10">Type of the tenth parameter.</typeparam>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <param name="param3">Out variable with the third parameter value.</param>
+        /// <param name="param4">Out variable with the fourth parameter value.</param>
+        /// <param name="param5">Out variable with the fifth parameter value.</param>
+        /// <param name="param6">Out variable with the sixth parameter value.</param>
+        /// <param name="param7">Out variable with the seventh parameter value.</param>
+        /// <param name="param8">Out variable with the eighth parameter value.</param>
+        /// <param name="param9">Out variable with the ninth parameter value.</param>
+        /// <param name="param10">Out variable with the tenth parameter value.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// If the length of the paramIds is different from the number of out parameters.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(
             this SLProtocol protocol,
             uint[] paramIds,
@@ -1679,17 +1331,11 @@
             where T9 : IConvertible
             where T10 : IConvertible
         {
-            if (paramIds is null)
-            {
-                throw new ArgumentNullException(nameof(paramIds));
-            }
+            ValidateGetParametersArguments(paramIds, 10);
 
-            if (paramIds.Length != 10)
-            {
-                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
-            }
+            var result = protocol.GetParameters(paramIds);
 
-            object[] parameters = (object[])protocol.GetParameters(paramIds);
+            ValidateResult(result, paramIds, out object[] parameters);
 
             param1 = parameters[0].ChangeType<T1>();
             param2 = parameters[1].ChangeType<T2>();
@@ -2008,6 +1654,540 @@
                 }
 
                 protocol.SetParameters(paramsToSet.Keys.ToArray(), paramsToSet.Values.ToArray(), historySetDates);
+            }
+        }
+
+        /// <summary>
+        /// Validates the arguments provided to a method that retrieves columns using the specified selector.
+        /// </summary>
+        /// <typeparam name="TSelector">The type of the selector used to process or return column data. Must be a reference type.</typeparam>
+        /// <param name="columnIndices">An array of column indices to be retrieved. The array must not be null and its length must match the
+        /// specified column count.</param>
+        /// <param name="columnCount">The expected number of columns to retrieve. Must be equal to the length of the column indices array.</param>
+        /// <param name="returnSelector">A selector instance used to process or return the column data. Must not be null.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the length of <paramref name="columnIndices"/> does not equal <paramref name="columnCount"/>.</exception>
+        private static void ValidateGetColumnsArguments<TSelector>(uint[] columnIndices, int columnCount, TSelector returnSelector) where TSelector : class
+        {
+            if (columnIndices == null)
+            {
+                throw new ArgumentNullException(nameof(columnIndices));
+            }
+
+            if (returnSelector == null)
+            {
+                throw new ArgumentNullException(nameof(returnSelector));
+            }
+
+            if (columnIndices.Length != columnCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(columnIndices), $"Number of columns has to be {columnCount}");
+            }
+        }
+
+        /// <summary>
+        /// Validates the arguments provided to a method that retrieves parameters using the specified parameter IDs.
+        /// </summary>
+        /// <param name="paramIds">An array of parameter IDs to be retrieved. The array must not be null and its length must match the expected number of parameters.</param>
+        /// <param name="expectedParamIdCount">The expected number of parameter IDs.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="paramIds"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the length of <paramref name="paramIds"/> does not match the expected number of parameters.</exception>
+        private static void ValidateGetParametersArguments(uint[] paramIds, int expectedParamIdCount)
+        {
+            if (paramIds is null)
+            {
+                throw new ArgumentNullException(nameof(paramIds));
+            }
+
+            if (paramIds.Length != expectedParamIdCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(paramIds), "paramIds need to have the same length as the number of out parameters");
+            }
+        }
+
+        /// <summary>
+        /// Validates the result of a GetColumns call for the specified table and column indices, ensuring it is in the expected format and contains consistent row counts across columns.
+        /// </summary>
+        /// <param name="tableId">The ID of the table from which columns were retrieved.</param>
+        /// <param name="columnIndices">The indices of the columns that were retrieved.</param>
+        /// <param name="columnCount">The expected number of columns.</param>
+        /// <param name="result">The result object returned from the GetColumns call.</param>
+        /// <param name="columns">The array of columns extracted from the result object.</param>
+        /// <param name="rowCount">The number of rows in each column.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
+        private static void ValidateResult(int tableId, uint[] columnIndices, int columnCount, object result, out object[] columns, out int rowCount)
+        {
+            if (result == null)
+            {
+                throw new InvalidOperationException($"null was returned for table {tableId}.");
+            }
+
+            columns = result as object[];
+
+            if (columns == null)
+            {
+                throw new InvalidOperationException($"Unexpected result format when retrieving columns {String.Join(", ", columnIndices)} from table {tableId}. Expected an array of objects.");
+            }
+
+            if (columns.Length != columnCount)
+            {
+                throw new InvalidOperationException($"Unexpected result format when retrieving columns {String.Join(", ", columnIndices)} from table {tableId}. Expected {columnCount} columns.");
+            }
+
+            rowCount = -1;
+            for (int c = 0; c < columnCount; c++)
+            {
+                if (columns[c] == null)
+                {
+                    throw new InvalidOperationException($"Column at index {columnIndices[c]} from table {tableId} is null.");
+                }
+
+                if (!(columns[c] is object[] columnData))
+                {
+                    throw new InvalidOperationException($"Unexpected format for column at index {columnIndices[c]} from table {tableId}. Expected an array of objects.");
+                }
+
+                if (rowCount == -1)
+                {
+                    rowCount = columnData.Length;
+                }
+                else if (columnData.Length != rowCount)
+                {
+                    throw new InvalidOperationException($"Column at index {columnIndices[c]} from table {tableId} has {columnData.Length} rows, but {rowCount} were expected.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates the result of a GetParameters call for the specified parameter IDs, ensuring it is in the expected format and contains non-null values for each parameter.
+        /// </summary>
+        /// <param name="result">The result object returned from the GetParameters call.</param>
+        /// <param name="paramIds">The IDs of the parameters that were retrieved.</param>
+        /// <param name="parameters">The array of parameters extracted from the result object.</param>
+        /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
+        private static void ValidateResult(object result, uint[] paramIds, out object[] parameters)
+        {
+            if (result == null)
+            {
+                throw new InvalidOperationException("null was returned.");
+            }
+
+            parameters = result as object[];
+
+            if (parameters == null)
+            {
+                throw new InvalidOperationException("Unexpected result format when retrieving parameters. Expected an array of objects.");
+            }
+
+            if (parameters.Length != paramIds.Length)
+            {
+                throw new InvalidOperationException($"Unexpected result format when retrieving parameters {String.Join(",", paramIds)}. Expected {paramIds.Length} parameters but only received {parameters.Length} values.");
+            }
+
+            for(int i = 0; i < paramIds.Length; i++)
+            {
+                if (parameters[i] == null)
+                {
+                    throw new InvalidOperationException($"Returned value for parameter {paramIds[i]} was null. Does the parameter exist?");
+                }
+            }
+        }
+
+        private static IEnumerable<T> GetColumnIterator<T>(object[] column, int rowCount) where T : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return column[i].ChangeType<T>();
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, TReturn>(object[] columns, int rowCount, Func<T1, T2, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+            where T12 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>(),
+                    ((object[])columns[11])[i].ChangeType<T12>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+            where T12 : IConvertible
+            where T13 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>(),
+                    ((object[])columns[11])[i].ChangeType<T12>(),
+                    ((object[])columns[12])[i].ChangeType<T13>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+            where T12 : IConvertible
+            where T13 : IConvertible
+            where T14 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>(),
+                    ((object[])columns[11])[i].ChangeType<T12>(),
+                    ((object[])columns[12])[i].ChangeType<T13>(),
+                    ((object[])columns[13])[i].ChangeType<T14>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn> returnSelector)
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+            where T12 : IConvertible
+            where T13 : IConvertible
+            where T14 : IConvertible
+            where T15 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>(),
+                    ((object[])columns[11])[i].ChangeType<T12>(),
+                    ((object[])columns[12])[i].ChangeType<T13>(),
+                    ((object[])columns[13])[i].ChangeType<T14>(),
+                    ((object[])columns[14])[i].ChangeType<T15>());
+            }
+        }
+
+        private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn> returnSelector)
+    where T1 : IConvertible
+    where T2 : IConvertible
+    where T3 : IConvertible
+    where T4 : IConvertible
+    where T5 : IConvertible
+    where T6 : IConvertible
+    where T7 : IConvertible
+    where T8 : IConvertible
+    where T9 : IConvertible
+    where T10 : IConvertible
+    where T11 : IConvertible
+    where T12 : IConvertible
+    where T13 : IConvertible
+    where T14 : IConvertible
+    where T15 : IConvertible
+    where T16 : IConvertible
+        {
+            for (var i = 0; i < rowCount; i++)
+            {
+                yield return returnSelector(
+                    ((object[])columns[0])[i].ChangeType<T1>(),
+                    ((object[])columns[1])[i].ChangeType<T2>(),
+                    ((object[])columns[2])[i].ChangeType<T3>(),
+                    ((object[])columns[3])[i].ChangeType<T4>(),
+                    ((object[])columns[4])[i].ChangeType<T5>(),
+                    ((object[])columns[5])[i].ChangeType<T6>(),
+                    ((object[])columns[6])[i].ChangeType<T7>(),
+                    ((object[])columns[7])[i].ChangeType<T8>(),
+                    ((object[])columns[8])[i].ChangeType<T9>(),
+                    ((object[])columns[9])[i].ChangeType<T10>(),
+                    ((object[])columns[10])[i].ChangeType<T11>(),
+                    ((object[])columns[11])[i].ChangeType<T12>(),
+                    ((object[])columns[12])[i].ChangeType<T13>(),
+                    ((object[])columns[13])[i].ChangeType<T14>(),
+                    ((object[])columns[14])[i].ChangeType<T15>(),
+                    ((object[])columns[15])[i].ChangeType<T16>());
             }
         }
     }
