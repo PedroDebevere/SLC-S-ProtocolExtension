@@ -3,9 +3,9 @@
     using System;
 
     /// <summary>
-	/// Defines extension methods to change a type of an object value.
-	/// </summary>
-	internal static class TypeExtensions
+    /// Defines extension methods to change a type of an object value.
+    /// </summary>
+    internal static class TypeExtensions
     {
         private static readonly Type DateTimeType = typeof(DateTime);
 

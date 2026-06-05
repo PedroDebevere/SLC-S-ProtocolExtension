@@ -272,22 +272,22 @@
         }
 
         /// <summary>
-		/// Gets four columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets four columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, T3, T4, TReturn> returnSelector)
             where T1 : IConvertible
@@ -307,23 +307,23 @@
         }
 
         /// <summary>
-		/// Gets five columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets five columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices, Func<T1, T2, T3, T4, T5, TReturn> returnSelector)
             where T1 : IConvertible
@@ -344,24 +344,24 @@
         }
 
         /// <summary>
-		/// Gets six columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets six columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, TReturn> returnSelector)
@@ -384,25 +384,25 @@
         }
 
         /// <summary>
-		/// Gets seven columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets seven columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, TReturn> returnSelector)
@@ -426,26 +426,26 @@
         }
 
         /// <summary>
-		/// Gets eight columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets eight columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, TReturn> returnSelector)
@@ -470,27 +470,27 @@
         }
 
         /// <summary>
-		/// Gets nine columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets nine columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, TReturn> returnSelector)
@@ -565,29 +565,29 @@
         }
 
         /// <summary>
-		/// Gets eleven columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets eleven columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, TReturn> returnSelector)
@@ -615,30 +615,30 @@
         }
 
         /// <summary>
-		/// Gets twelve columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="T12">Type of the twelfth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
-		/// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// Gets twelve columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="T12">Type of the twelfth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, TReturn> returnSelector)
@@ -667,31 +667,31 @@
         }
 
         /// <summary>
-		/// Gets thirteen columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="T12">Type of the twelfth Column.</typeparam>
-		/// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets thirteen columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="T12">Type of the twelfth Column.</typeparam>
+        /// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, TReturn> returnSelector)
@@ -721,32 +721,32 @@
         }
 
         /// <summary>
-		/// Gets fourteen columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="T12">Type of the twelfth Column.</typeparam>
-		/// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
-		/// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
-		/// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// Gets fourteen columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="T12">Type of the twelfth Column.</typeparam>
+        /// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
+        /// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// <param name="protocol">Link with SLProtocol process.</param>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, TReturn> returnSelector)
@@ -777,33 +777,33 @@
         }
 
         /// <summary>
-		/// Gets fifteen columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="T12">Type of the twelfth Column.</typeparam>
-		/// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
-		/// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
-		/// <typeparam name="T15">Type of the fifteenth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets fifteen columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="T12">Type of the twelfth Column.</typeparam>
+        /// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
+        /// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
+        /// <typeparam name="T15">Type of the fifteenth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="tableId">Id of the table to fetch the columns from.</param>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, TReturn> returnSelector)
@@ -835,34 +835,34 @@
         }
 
         /// <summary>
-		/// Gets sixteen columns from a table and returns an array with the given selector.
-		/// </summary>
-		/// <typeparam name="T1">Type of the first Column.</typeparam>
-		/// <typeparam name="T2">Type of the second Column.</typeparam>
-		/// <typeparam name="T3">Type of the third Column.</typeparam>
-		/// <typeparam name="T4">Type of the fourth Column.</typeparam>
-		/// <typeparam name="T5">Type of the fifth Column.</typeparam>
-		/// <typeparam name="T6">Type of the sixth Column.</typeparam>
-		/// <typeparam name="T7">Type of the seventh Column.</typeparam>
-		/// <typeparam name="T8">Type of the eighth Column.</typeparam>
-		/// <typeparam name="T9">Type of the ninth Column.</typeparam>
-		/// <typeparam name="T10">Type of the tenth Column.</typeparam>
-		/// <typeparam name="T11">Type of the eleventh Column.</typeparam>
-		/// <typeparam name="T12">Type of the twelfth Column.</typeparam>
-		/// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
-		/// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
-		/// <typeparam name="T15">Type of the fifteenth Column.</typeparam>
-		/// <typeparam name="T16">Type of the sixteenth Column.</typeparam>
-		/// <typeparam name="TReturn">Type of the return value.</typeparam>
+        /// Gets sixteen columns from a table and returns an array with the given selector.
+        /// </summary>
+        /// <typeparam name="T1">Type of the first Column.</typeparam>
+        /// <typeparam name="T2">Type of the second Column.</typeparam>
+        /// <typeparam name="T3">Type of the third Column.</typeparam>
+        /// <typeparam name="T4">Type of the fourth Column.</typeparam>
+        /// <typeparam name="T5">Type of the fifth Column.</typeparam>
+        /// <typeparam name="T6">Type of the sixth Column.</typeparam>
+        /// <typeparam name="T7">Type of the seventh Column.</typeparam>
+        /// <typeparam name="T8">Type of the eighth Column.</typeparam>
+        /// <typeparam name="T9">Type of the ninth Column.</typeparam>
+        /// <typeparam name="T10">Type of the tenth Column.</typeparam>
+        /// <typeparam name="T11">Type of the eleventh Column.</typeparam>
+        /// <typeparam name="T12">Type of the twelfth Column.</typeparam>
+        /// <typeparam name="T13">Type of the thirteenth Column.</typeparam>
+        /// <typeparam name="T14">Type of the fourteenth Column.</typeparam>
+        /// <typeparam name="T15">Type of the fifteenth Column.</typeparam>
+        /// <typeparam name="T16">Type of the sixteenth Column.</typeparam>
+        /// <typeparam name="TReturn">Type of the return value.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
         /// <param name="tableId">Id of the table to fetch the columns from.</param>
-		/// <param name="columnIndices">Array with the Columns Indexes.</param>
-		/// <param name="returnSelector">A function to map each column element to a return element.</param>
-		/// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
+        /// <param name="columnIndices">Array with the Columns Indexes.</param>
+        /// <param name="returnSelector">A function to map each column element to a return element.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <typeparamref name="TReturn"/> with the desired columns.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="columnIndices"/> or <paramref name="returnSelector"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">
-		/// Number of columns doesn't match the number of returned members.
-		/// </exception>
+        /// Number of columns doesn't match the number of returned members.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the returned data is null, not in the expected format, or contains inconsistent row counts across columns.</exception>
         public static IEnumerable<TReturn> GetColumns<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn>(this SLProtocol protocol, int tableId, uint[] columnIndices,
             Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn> returnSelector)
@@ -895,12 +895,12 @@
         }
 
         /// <summary>
-		/// Executes a <see cref="SLProtocol.GetParameter(int)"/> and return the value in the desired format.
-		/// </summary>
-		/// <typeparam name="T">Type of the Parameter.</typeparam>
+        /// Executes a <see cref="SLProtocol.GetParameter(int)"/> and return the value in the desired format.
+        /// </summary>
+        /// <typeparam name="T">Type of the Parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramId">Id of the parameter to retrieve.</param>
-		/// <returns>The parameter value.</returns>
+        /// <param name="paramId">Id of the parameter to retrieve.</param>
+        /// <returns>The parameter value.</returns>
         /// <exception cref="InvalidOperationException">Thrown if the returned value is null.</exception>
         public static T GetParameter<T>(this SLProtocol protocol, int paramId)
             where T : IConvertible
@@ -913,18 +913,18 @@
         }
 
         /// <summary>
-		/// Gets the desired parameters and converts to the given types.
-		/// </summary>
-		/// <typeparam name="T1">Type of the fist parameter.</typeparam>
-		/// <typeparam name="T2">Type of the second parameter.</typeparam>
+        /// Gets the desired parameters and converts to the given types.
+        /// </summary>
+        /// <typeparam name="T1">Type of the fist parameter.</typeparam>
+        /// <typeparam name="T2">Type of the second parameter.</typeparam>
         /// <param name="protocol">Link with SLProtocol process.</param>
-		/// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
-		/// <param name="param1">Out variable with the first parameter value.</param>
-		/// <param name="param2">Out variable with the second parameter value.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
-		/// <exception cref="ArgumentOutOfRangeException">
-		/// The length of <paramref name="paramIds"/> differs from the number of out parameters.
-		/// </exception>
+        /// <param name="paramIds">Array with the ids of the Parameters to fetch.</param>
+        /// <param name="param1">Out variable with the first parameter value.</param>
+        /// <param name="param2">Out variable with the second parameter value.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="paramIds"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The length of <paramref name="paramIds"/> differs from the number of out parameters.
+        /// </exception>
         /// <exception cref="InvalidOperationException">Thrown if the result is null, not in the expected format, or contains null values for any parameter.</exception>
         public static void GetParameters<T1, T2>(this SLProtocol protocol, uint[] paramIds, out T1 param1, out T2 param2)
             where T1 : IConvertible
@@ -1390,12 +1390,12 @@
         }
 
         /* We (PedroD and SimonV) considered different options for columnsValues argument type of SetColumns :
-         *      - object[][]							=> Efficient but not so flexible
-         *      - IEnumerable<IEnumarable<object>>		=> Full flexibility but less efficient
-         *      - IList<IEnumerable<object>>			=> Efficient and seems to bring decent flexibility. However, when actually trying to use it, the flexibility is not there.
+         *      - object[][]                            => Efficient but not so flexible
+         *      - IEnumerable<IEnumarable<object>>      => Full flexibility but less efficient
+         *      - IList<IEnumerable<object>>            => Efficient and seems to bring decent flexibility. However, when actually trying to use it, the flexibility is not there.
          *                                                  For some reason, providing it with a list or so doesn't compile.
          *                                                  Only object[][] works. Has to do with the fact that IList do not supper covariance or contravariance because they need to support both reading and writing.
-         *      - IReadOnlyList<IEnumerable<object>>	=> Efficient and brings decent flexibility.
+         *      - IReadOnlyList<IEnumerable<object>>    => Efficient and brings decent flexibility.
          *                                                  This one works because IReadOnlyList is read-only meaning it can support covariance.
          * 
          *  => We opted for option 4 which seemed like a good middle-ground.
@@ -2152,22 +2152,22 @@
         }
 
         private static IEnumerable<TReturn> GetColumnsIterator<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn>(object[] columns, int rowCount, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TReturn> returnSelector)
-    where T1 : IConvertible
-    where T2 : IConvertible
-    where T3 : IConvertible
-    where T4 : IConvertible
-    where T5 : IConvertible
-    where T6 : IConvertible
-    where T7 : IConvertible
-    where T8 : IConvertible
-    where T9 : IConvertible
-    where T10 : IConvertible
-    where T11 : IConvertible
-    where T12 : IConvertible
-    where T13 : IConvertible
-    where T14 : IConvertible
-    where T15 : IConvertible
-    where T16 : IConvertible
+            where T1 : IConvertible
+            where T2 : IConvertible
+            where T3 : IConvertible
+            where T4 : IConvertible
+            where T5 : IConvertible
+            where T6 : IConvertible
+            where T7 : IConvertible
+            where T8 : IConvertible
+            where T9 : IConvertible
+            where T10 : IConvertible
+            where T11 : IConvertible
+            where T12 : IConvertible
+            where T13 : IConvertible
+            where T14 : IConvertible
+            where T15 : IConvertible
+            where T16 : IConvertible
         {
             for (var i = 0; i < rowCount; i++)
             {
