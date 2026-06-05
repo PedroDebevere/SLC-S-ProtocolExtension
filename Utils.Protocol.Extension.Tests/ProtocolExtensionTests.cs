@@ -1,7 +1,6 @@
 ﻿namespace Skyline.DataMiner.Utils.Protocol.Extension.Tests
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 

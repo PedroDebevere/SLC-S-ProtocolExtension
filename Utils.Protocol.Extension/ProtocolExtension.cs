@@ -936,9 +936,9 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -968,9 +968,9 @@
             ValidateResult(result, paramIds, out object[] parameters);
 
             param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-		}
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1003,10 +1003,10 @@
             ValidateResult(result, paramIds, out object[] parameters);
 
             param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-		}
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1041,12 +1041,12 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-			param5 = parameters[4].ChangeType<T5>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+            param5 = parameters[4].ChangeType<T5>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1084,13 +1084,13 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-			param5 = parameters[4].ChangeType<T5>();
-			param6 = parameters[5].ChangeType<T6>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+            param5 = parameters[4].ChangeType<T5>();
+            param6 = parameters[5].ChangeType<T6>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1140,14 +1140,14 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-			param5 = parameters[4].ChangeType<T5>();
-			param6 = parameters[5].ChangeType<T6>();
-			param7 = parameters[6].ChangeType<T7>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+            param5 = parameters[4].ChangeType<T5>();
+            param6 = parameters[5].ChangeType<T6>();
+            param7 = parameters[6].ChangeType<T7>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1201,15 +1201,15 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-			param5 = parameters[4].ChangeType<T5>();
-			param6 = parameters[5].ChangeType<T6>();
-			param7 = parameters[6].ChangeType<T7>();
-			param8 = parameters[7].ChangeType<T8>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+            param5 = parameters[4].ChangeType<T5>();
+            param6 = parameters[5].ChangeType<T6>();
+            param7 = parameters[6].ChangeType<T7>();
+            param8 = parameters[7].ChangeType<T8>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1267,16 +1267,16 @@
 
             ValidateResult(result, paramIds, out object[] parameters);
 
-			param1 = parameters[0].ChangeType<T1>();
-			param2 = parameters[1].ChangeType<T2>();
-			param3 = parameters[2].ChangeType<T3>();
-			param4 = parameters[3].ChangeType<T4>();
-			param5 = parameters[4].ChangeType<T5>();
-			param6 = parameters[5].ChangeType<T6>();
-			param7 = parameters[6].ChangeType<T7>();
-			param8 = parameters[7].ChangeType<T8>();
-			param9 = parameters[8].ChangeType<T9>();
-		}
+            param1 = parameters[0].ChangeType<T1>();
+            param2 = parameters[1].ChangeType<T2>();
+            param3 = parameters[2].ChangeType<T3>();
+            param4 = parameters[3].ChangeType<T4>();
+            param5 = parameters[4].ChangeType<T5>();
+            param6 = parameters[5].ChangeType<T6>();
+            param7 = parameters[6].ChangeType<T7>();
+            param8 = parameters[7].ChangeType<T8>();
+            param9 = parameters[8].ChangeType<T9>();
+        }
 
         /// <summary>
         /// Gets the desired parameters and converts to the given types.
@@ -1784,7 +1784,7 @@
                 throw new InvalidOperationException($"Unexpected result format when retrieving parameters {String.Join(",", paramIds)}. Expected {paramIds.Length} parameters but only received {parameters.Length} values.");
             }
 
-            for(int i = 0; i < paramIds.Length; i++)
+            for (int i = 0; i < paramIds.Length; i++)
             {
                 if (parameters[i] == null)
                 {
